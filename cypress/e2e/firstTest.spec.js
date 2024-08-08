@@ -35,7 +35,7 @@ describe("First test suite", () => {
     cy.get('[data-cy="imputEmail1"]');
   });
 
-  it.only("second test", () => {
+  it("second test", () => {
     cy.visit("/"); //因為網址有寫在 cypress.config.js => e2e 底下的 baseUrl 了
     cy.contains("Forms").click();
     cy.contains("Form Layouts").click();
@@ -45,7 +45,7 @@ describe("First test suite", () => {
     // find() - find child elements by locator (find()不能單獨使用)
     // contains() - find HTML text and by text and locator
 
-    cy.contains("Sign in"); // Sign in 是根據 HTML 裡面的 text 文字而來的
+    cy.contains("Sign in"); // Sign in 是根據 HTML 裡面的 text 文字而來的，這個地方只會找到第一個 Sign in BTN
     cy.contains('[status="warning"]', "Sign in"); // [status="warning"] 是指屬性所對應的值，Sign in 是根據 HTML 裡面的 text 文字而來的
     cy.contains("nb-card", "Horizontal form").find("button"); //nb-card 是"標籤"，Horizontal form 是 HTML的文字
     cy.contains("nb-card", "Horizontal form").contains("Sign in"); //nb-card 是"標籤"，Horizontal form 是 HTML的文字，Sign in 是 HTML的文字
@@ -59,5 +59,124 @@ describe("First test suite", () => {
       .parents("form")
       .find("nb-checkbox")
       .click();
+  });
+
+  it("save subject of the command", () => {
+    cy.visit("/");
+    cy.contains("Form").click();
+    cy.contains("Form Layouts").click();
+
+    cy.contains("nb-card", "Using the Grid")
+      .find('[for="inputEmail1"]')
+      .should("contain", "Email");
+    cy.contains("nb-card", "Using the Grid")
+      .find('[for="inputPassword2"]')
+      .should("contain", "Password");
+
+    //注意: 以下 不可以這樣做
+    // const usingTheGrid = cy.contains("nb-card", "Using the Grid");
+    // usingTheGrid.find('[for="inputEmail1"]').should("contain", "Email");
+    // usingTheGrid.find('[for="inputPassword2"]').should("contain", "Password");
+
+    // 1. Cypress Alias(別名) 用 as 取別名，後面接 cy.get(@xxxx)
+    cy.contains("nb-card", "Using the Grid").as("usingTheGrid");
+    cy.get("@usingTheGrid")
+      .find('[for="inputEmail1"]')
+      .should("contain", "Email");
+    cy.get("@usingTheGrid")
+      .find('[for="inputPassword2"]')
+      .should("contain", "Password");
+
+    // 2. Cypress then() methods，then() 裡面放 callback function
+    cy.contains("nb-card", "Using the Grid").then((usingTheGridForm) => {
+      cy.wrap(usingTheGridForm)
+        .find('[for="inputEmail1"]')
+        .should("contain", "Email");
+      cy.wrap(usingTheGridForm)
+        .find('[for="inputPassword2"]')
+        .should("contain", "Password");
+    });
+  });
+
+  it("test 2", () => {
+    cy.visit("/");
+    cy.contains("Form").click();
+    cy.contains("Form Layouts").click();
+
+    cy.contains("nb-card", "Using the Grid")
+      .find('[for="inputEmail1"]')
+      .should("contain", "Email");
+    cy.contains("nb-card", "Using the Grid")
+      .find('[for="inputPassword2"]')
+      .should("contain", "Password");
+
+    // 1 別名
+    cy.contains("nb-card", "Using the Grid").as("useingTheGrid");
+    cy.get("@useingTheGrid")
+      .find('[for="inputEmail1"]')
+      .should("contain", "Email");
+    cy.get("@useingTheGrid")
+      .find('[for="inputPassword2"]')
+      .should("contain", "Password");
+
+    // 2 使用 then() 方法
+    cy.contains("nb-card", "Using the Grid").then((usingTheGridForm2) => {
+      cy.wrap(usingTheGridForm2)
+        .find('[for="inputEmail1"]')
+        .should("contain", "Email");
+      cy.wrap(usingTheGridForm2)
+        .find('[for="inputPassword2"]')
+        .should("contain", "Password");
+    });
+  });
+
+  it("extract text values", () => {
+    cy.visit("/");
+    cy.contains("Form").click();
+    cy.contains("Form Layouts").click();
+
+    // 1
+    cy.get('[for="exampleInputEmail1"]').should("contain", "Email address");
+
+    // 2
+    cy.get('[for="exampleInputEmail1"]').then((label) => {
+      const labelText = label.text();
+      expect(labelText).to.equal("Email address");
+      cy.wrap(label).should("contain", "Email address");
+    });
+
+    // 3
+    cy.get('[for="exampleInputEmail1"]')
+      .invoke("text")
+      .then((text) => {
+        expect(text).to.equal("Email address");
+      });
+
+    cy.get('[for="exampleInputEmail1"]')
+      .invoke("text")
+      .as("labelText")
+      .should("contain", "Email address");
+
+    // 4
+    cy.get('[for="exampleInputEmail1"]')
+      .invoke("attr", "class")
+      .then((classValue) => {
+        expect(classValue).to.be.equal("label");
+      });
+
+    // 5 invoke property
+    cy.get("#exampleInputEmail1").type("test@test.com"); // 也可以寫成 cy.get('[id="exampleInputEmail1"]').type("test@test.com")
+    cy.get("#exampleInputEmail1") // 也可以寫成 cy.get('[id="exampleInputEmail1"]')
+      .invoke("prop", "value")
+      .should("contain", "test@test.com")
+      .then((property) => {
+        expect(property).to.equal("test@test.com");
+      });
+  });
+
+  it.only("radio buttons", () => {
+    cy.visit("/");
+    cy.contains("Form").click();
+    cy.contains("Form Layouts").click();
   });
 });
