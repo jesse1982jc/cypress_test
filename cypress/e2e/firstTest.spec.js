@@ -174,9 +174,53 @@ describe("First test suite", () => {
       });
   });
 
-  it.only("radio buttons", () => {
+  it("radio buttons", () => {
     cy.visit("/");
     cy.contains("Form").click();
     cy.contains("Form Layouts").click();
+
+    cy.contains("nb-card", "Using the Grid")
+      .find('[type="radio"]')
+      .then((radioButtons) => {
+        // 這是是指所有的 radioButtons，共3個
+        cy.wrap(radioButtons).eq(0).check({ force: true }).should("be.checked"); // 第 1 個 radioButton 被點擊，其他的不會被點擊
+        cy.wrap(radioButtons).eq(1).check({ force: true }).should("be.checked"); // 換到第 2 個 radioButton 被點擊，第 1 個 radioButton 就不會被點擊了
+        cy.wrap(radioButtons).eq(0).should("not.be.checked"); // 確認第 1 個 radioButton 沒有被點擊
+        cy.wrap(radioButtons).eq(2).should("be.disabled"); // 確認第 3 個是反灰禁用狀態
+      });
+  });
+
+  it("checkboxes", () => {
+    cy.visit("/");
+    cy.contains("Modal & Overlays").click();
+    cy.contains("Toastr").click();
+
+    // 因為 checkbox 元素在此頁面只有一個地方，所以用 cy.get()...
+    // cy.get('[type="checkbox"]').check({ force: true }); // 使用 check() 是指把核取方塊打勾起來，原本有打勾的就不動，沒打勾的才打勾
+    cy.get('[type="checkbox"]').uncheck({ force: true }); // 使用 uncheck() 是指把核取方塊打勾取消，原本就沒打勾的就不動，有打勾的才取消
+    // cy.get('[type="checkbox"]').eq(1).uncheck({ force: true });
+    cy.get('[type="checkbox"]').eq(0).click({ force: true }); // 使用 click() 是點擊一下，不管先前的狀態是否 check 或 uncheck
+    cy.get('[type="checkbox"]').eq(1).check({ force: true });
+  });
+
+  it.only("datepicker", () => {
+    cy.visit("/");
+    cy.contains("Forms").click();
+    cy.contains("Datepicker").click();
+
+    let date = new Date(); // 創建新的 Date 物件
+    date.setDate(date.getDate() + 5); //先取得當前的日期 day 的部分，再加 5 天，再去設定日期為 day + 5 的 day
+    // console.log(date);
+    let futureDate = date.getDate(); // 把 day + 5 丟給新變數 futureDate
+    let dateToAssert = `Aug ${futureDate}, 2024`;
+
+    cy.contains("nb-card", "Common Datepicker")
+      .find("input")
+      .then((input) => {
+        cy.wrap(input).click();
+        cy.get(".day-cell").not("bounding-month").contains(futureDate).click();
+        cy.wrap(input).invoke("prop", "value").should("contain", dateToAssert);
+        cy.wrap(input).should("have.value", dateToAssert);
+      });
   });
 });
