@@ -203,24 +203,150 @@ describe("First test suite", () => {
     cy.get('[type="checkbox"]').eq(1).check({ force: true });
   });
 
-  it.only("datepicker", () => {
+  it("datepicker", () => {
+    // 新建一個函式跑遞迴
+    function selectDayFromCurrent(day) {
+      let date = new Date(); // 創建新的 Date 物件
+      date.setDate(date.getDate() + day); //先取得當前的日期 day 的部分，再加 5 天，再去設定日期為 day + 5 的 day
+      // console.log(date);
+
+      let futureDay = date.getDate(); // 把 day + 5 丟給新變數 futureDay
+      let futureMonth = date.toLocaleDateString("en-US", { month: "short" });
+      let futureYear = date.getFullYear();
+
+      let dateToAssert = `${futureMonth} ${futureDay}, ${futureYear}`;
+
+      cy.get("nb-calendar-navigation")
+        .invoke("attr", "ng-reflect-date")
+        .then((dateAttribute) => {
+          if (
+            !dateAttribute.includes(futureMonth) ||
+            !dateAttribute.includes(futureYear)
+          ) {
+            cy.get('[data-name="chevron-right"]').click();
+            selectDayFromCurrent(day);
+          } else {
+            cy.get(".day-cell")
+              .not(".bounding-month")
+              .contains(futureDay)
+              .click();
+          }
+        });
+      return dateToAssert;
+    }
+
     cy.visit("/");
     cy.contains("Forms").click();
     cy.contains("Datepicker").click();
-
-    let date = new Date(); // 創建新的 Date 物件
-    date.setDate(date.getDate() + 5); //先取得當前的日期 day 的部分，再加 5 天，再去設定日期為 day + 5 的 day
-    // console.log(date);
-    let futureDate = date.getDate(); // 把 day + 5 丟給新變數 futureDate
-    let dateToAssert = `Aug ${futureDate}, 2024`;
 
     cy.contains("nb-card", "Common Datepicker")
       .find("input")
       .then((input) => {
         cy.wrap(input).click();
-        cy.get(".day-cell").not("bounding-month").contains(futureDate).click();
+        const dateToAssert = selectDayFromCurrent(400);
         cy.wrap(input).invoke("prop", "value").should("contain", dateToAssert);
         cy.wrap(input).should("have.value", dateToAssert);
+      });
+  });
+
+  it("datepicker2", () => {
+    function selectDayFromCurrendDay(day) {
+      // 建立一個 date 物件
+      let date = new Date();
+      date.setDate(date.getDate() + day); // 1. 先拿到今天的日期，再 + 5 天。  2. 再去設定成今天日期
+      let futureDay2 = date.getDate(); // 取得今天的日期，再丟給變數 futureDate2
+      let futureMonth2 = date.toLocaleDateString("en-US", { month: "short" });
+      let futureYear2 = date.getFullYear();
+      let dateToAssert2 = `${futureMonth2} ${futureDay2}, ${futureYear2}`; // 設定之後要斷言的字串格式
+
+      cy.get("nb-calendar-navigation")
+        .invoke("attr", "ng-reflect-date")
+        .then((dateToAttribute) => {
+          if (
+            !dateToAttribute.includes(futureMonth2) ||
+            !dateToAttribute.includes(futureYear2)
+          ) {
+            // 假如 dateToAttribute 不在範圍的年、月份裡面，就要繼續點 ">" 切換到下一個月
+            // 條件成立
+            cy.get('[data-name="chevron-right"]').click();
+            selectDayFromCurrendDay(day);
+          } else {
+            // 找到 dateToAttribute 找到在範圍內了，直接點該日期
+            // 條件不成立
+            cy.get(".day-cell")
+              .not(".bounding-month")
+              .contains(futureDay2)
+              .click();
+          }
+        });
+      return dateToAssert2;
+    }
+
+    cy.visit("/");
+    cy.contains("Forms").click();
+    cy.contains("Datepicker").click();
+
+    cy.contains("nb-card", "Common Datepicker")
+      .find("input")
+      .then((input) => {
+        cy.wrap(input).click();
+
+        const dateToAssertUse = selectDayFromCurrendDay(600);
+        // cy.get(".day-cell").not(".bounding-month").contains(futureDay2).click();
+        cy.wrap(input)
+          .invoke("prop", "value")
+          .should("contain", dateToAssertUse);
+        cy.wrap(input).should("have.value", dateToAssertUse);
+      });
+  });
+
+  it.only("datepicker test", () => {
+    function selectDayFromCurrendDay2(day) {
+      let date = new Date();
+      date.setDate(date.getDate() + day);
+
+      let futureDay = date.getDate();
+      let futureMonth = date.toLocaleDateString("en-US", { month: "short" });
+      let futureYear = date.getFullYear();
+
+      let dateAssert = `${futureMonth} ${futureDay}, ${futureYear}`;
+
+      cy.get("nb-calendar-navigation")
+        .invoke("attr", "ng-reflect-date")
+        .then((dateForAttribute) => {
+          if (
+            !dateForAttribute.includes(futureMonth) ||
+            !dateForAttribute.includes(futureYear)
+          ) {
+            cy.get('[data-name="chevron-right"]').click();
+            selectDayFromCurrendDay2(day);
+          } else {
+            cy.get(".day-cell")
+              .not(".bounding-month")
+              .contains(futureDay)
+              .click();
+          }
+        });
+      return dateAssert;
+    }
+
+    cy.visit("/");
+    cy.contains("Forms").click();
+    cy.contains("Datepicker").click();
+
+    cy.contains("nb-card", "Common Datepicker")
+      .find("input")
+      .then((inputValue) => {
+        cy.wrap(inputValue).click();
+
+        // 執行重要的函式
+        const dateForAssert = selectDayFromCurrendDay2(900);
+
+        cy.wrap(inputValue)
+          .invoke("prop", "value")
+          .should("contain", dateForAssert);
+
+        cy.wrap(inputValue).should("have.value", dateForAssert);
       });
   });
 });
