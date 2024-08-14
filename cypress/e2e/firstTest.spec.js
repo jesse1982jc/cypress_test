@@ -350,7 +350,7 @@ describe("First test suite", () => {
       });
   });
 
-  it.only("Lists and dropdowns", () => {
+  it("Lists and dropdowns", () => {
     cy.visit("/");
 
     // cy.get("nav").find("nb-select").click();
@@ -374,10 +374,48 @@ describe("First test suite", () => {
         cy.wrap(dropDown).should("contain", itemText);
 
         if (index < 3) {
-          // index 從 0，1，2 跑，當跑到 3 時，因為條件不符合，就跳出了
+          // index 從 0，1，2 跑，當跑到 3 時，因為條件不符合，就跳出了 (因為到第四個 listItem[3] 時，已經是最後一次遍歷，所以不需要再 click 一次了)
           cy.wrap(dropDown).click(); //讓下拉選單的選項，再次被點擊打開 (因為每次 click 一次，下拉選單會折疊關閉起來)
         }
       });
     });
+  });
+
+  it.only("Web tables", () => {
+    cy.visit("/");
+    cy.contains("Tables & Data").click();
+    cy.contains("Smart Table").click();
+
+    // 1. Get the row by text
+    cy.get("tbody")
+      .contains("tr", "Larry")
+      .then((tableRow) => {
+        cy.wrap(tableRow).find(".nb-edit").click();
+        cy.wrap(tableRow).find('[placeholder="Age"]').clear().type("35");
+        cy.wrap(tableRow).find(".nb-checkmark").click();
+        cy.wrap(tableRow).find("td").eq(6).should("contain", "35");
+      });
+
+    // 2. Get row by index
+    cy.get("thead").find(".nb-plus").click();
+    cy.get("thead")
+      .find("tr")
+      .eq(2)
+      .then((inputTableRow) => {
+        cy.wrap(inputTableRow).find('[placeholder="First Name"]').type("Jesse");
+        cy.wrap(inputTableRow).find('[placeholder="Last Name"]').type("Huang");
+        cy.wrap(inputTableRow).find(".nb-checkmark").click();
+      });
+
+    cy.get("tbody tr")
+      .first()
+      .find("td")
+      .then((tableColumns) => {
+        cy.wrap(tableColumns).eq(2).should("contain", "Jesse");
+        cy.wrap(tableColumns).eq(3).should("contain", "Huang");
+      });
+    // 也可以這樣寫
+    cy.get("tbody tr").eq(0).find("td").eq(2).should("contain", "Jesse");
+    cy.get("tbody tr").eq(0).find("td").eq(3).should("contain", "Huang");
   });
 });
