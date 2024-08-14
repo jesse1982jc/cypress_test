@@ -300,7 +300,7 @@ describe("First test suite", () => {
       });
   });
 
-  it.only("datepicker test", () => {
+  it("datepicker test", () => {
     function selectDayFromCurrendDay2(day) {
       let date = new Date();
       date.setDate(date.getDate() + day);
@@ -340,7 +340,7 @@ describe("First test suite", () => {
         cy.wrap(inputValue).click();
 
         // 執行重要的函式
-        const dateForAssert = selectDayFromCurrendDay2(900);
+        const dateForAssert = selectDayFromCurrendDay2(200);
 
         cy.wrap(inputValue)
           .invoke("prop", "value")
@@ -348,5 +348,36 @@ describe("First test suite", () => {
 
         cy.wrap(inputValue).should("have.value", dateForAssert);
       });
+  });
+
+  it.only("Lists and dropdowns", () => {
+    cy.visit("/");
+
+    // cy.get("nav").find("nb-select").click();
+    // 也可以寫成下列這樣 get("兩個標籤中空一格之類的……")
+    // 1.
+    cy.get("nav nb-select").click();
+    cy.get(".options-list").contains("Dark").click();
+    cy.get("nav nb-select").should("contain", "Dark");
+    // cy.get("nav nb-select")
+    //   .invoke("attr", "ng-reflect-selected")
+    //   .should("contain", "dark");
+
+    // 2.
+    cy.get("nav nb-select").then((dropDown) => {
+      cy.wrap(dropDown).click();
+
+      cy.get(".options-list nb-option").each((listItem, index) => {
+        // 找到四個下拉選單的選項 item
+        const itemText = listItem.text().trim(); // 抓取每個 item 的文字出來，去頭尾空白
+        cy.wrap(listItem).click();
+        cy.wrap(dropDown).should("contain", itemText);
+
+        if (index < 3) {
+          // index 從 0，1，2 跑，當跑到 3 時，因為條件不符合，就跳出了
+          cy.wrap(dropDown).click(); //讓下拉選單的選項，再次被點擊打開 (因為每次 click 一次，下拉選單會折疊關閉起來)
+        }
+      });
+    });
   });
 });
