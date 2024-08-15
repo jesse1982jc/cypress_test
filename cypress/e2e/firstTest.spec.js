@@ -417,5 +417,22 @@ describe("First test suite", () => {
     // 也可以這樣寫
     cy.get("tbody tr").eq(0).find("td").eq(2).should("contain", "Jesse");
     cy.get("tbody tr").eq(0).find("td").eq(3).should("contain", "Huang");
+
+    // 3. Get each row validation
+    const age = [20, 30, 40, 200];
+
+    cy.wrap(age).each((age) => {
+      cy.get('thead [placeholder="Age"]').clear().type(age);
+
+      // 加上延遲指令
+      cy.wait(500);
+      cy.get("tbody tr").each((tableRow) => {
+        if (age == 200) {
+          cy.wrap(tableRow).find("td").should("contain", "No data found");
+        } else {
+          cy.wrap(tableRow).find("td").eq(6).should("contain", age);
+        }
+      });
+    });
   });
 });
