@@ -381,7 +381,7 @@ describe("First test suite", () => {
     });
   });
 
-  it.only("Web tables", () => {
+  it("Web tables", () => {
     cy.visit("/");
     cy.contains("Tables & Data").click();
     cy.contains("Smart Table").click();
@@ -434,5 +434,61 @@ describe("First test suite", () => {
         }
       });
     });
+  });
+
+  // tooltip
+  it("tooltip", () => {
+    cy.visit("/");
+    cy.contains("Modal & Overlays").click();
+    cy.contains("Tooltip").click();
+
+    cy.contains("nb-card", "Colored Tooltips").contains("Default").click();
+    cy.get("nb-tooltip").should("contain", "This is a tooltip");
+  });
+
+  // dialog
+  it("dialog", () => {
+    cy.visit("/");
+    cy.contains("Modal & Overlays").click();
+    cy.contains("Dialog").click();
+
+    cy.contains("nb-card", "Open Dialog")
+      .contains("Open Dialog with component")
+      .click();
+    cy.wait(1000);
+    cy.get("nb-card-header").should(
+      "contain",
+      "This is a title passed to the dialog component"
+    );
+  });
+
+  it.only("dialog box", () => {
+    cy.visit("/");
+    cy.contains("Tables & Data").click();
+    cy.contains("Smart Table").click();
+
+    // // 1. 不好的例子，不要採用
+    // cy.get("tbody tr").first().find(".nb-trash").click();
+    // // 此例子是 windows 的 confirm(兩個按鈕) ，不是 alert(單一按鈕)
+    // cy.on("window:confirm", (confirm) => {
+    //   expect(confirm).to.equal("Are you sure you want to delete?");
+    // });
+
+    // // 2. 較好的例子，可以採用
+    // const stub = cy.stub();
+    // cy.on("window:confirm", stub);
+    // cy.get("tbody tr")
+    //   .first()
+    //   .find(".nb-trash")
+    //   .click()
+    //   .then(() => {
+    //     expect(stub.getCall(0)).to.be.calledWith(
+    //       "Are you sure you want to delete?"
+    //     );
+    //   });
+
+    // 3. 關閉自動點擊 confirm 視窗的按鈕
+    cy.get("tbody tr").first().find(".nb-trash").click();
+    cy.on("window:confirm", () => false);
   });
 });
